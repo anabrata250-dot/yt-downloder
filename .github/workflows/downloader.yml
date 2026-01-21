@@ -1,0 +1,40 @@
+name: 🎵 Music Downloader (320kbps)
+
+on:
+  workflow_dispatch:
+    inputs:
+      link:
+        description: 'Paste YouTube URL (Video or Playlist)'
+        required: true
+        type: string
+
+jobs:
+  download_music:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Install yt-dlp and FFmpeg
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y ffmpeg
+        python3 -m pip install yt-dlp
+
+    - name: Download Music (320kbps)
+      run: |
+        mkdir downloads
+        # -x extracts audio
+        # --audio-format mp3 converts to mp3
+        # --audio-quality 320K forces high quality (closest to your 360 request)
+        # --yes-playlist ensures playlists work
+        yt-dlp -x --audio-format mp3 --audio-quality 320K --yes-playlist -o "downloads/%(title)s.%(ext)s" "${{ inputs.link }}"
+
+    - name: Upload Music as Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: My_Music_Files
+        path: downloads/
+        retention-days: 1
+        
